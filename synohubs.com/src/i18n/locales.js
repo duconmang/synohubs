@@ -3,8 +3,8 @@ export const locales = {
     code: 'en',
     name: 'English',
     flag: '🇺🇸',
-    liveVisitors: { text: 'people reading with you' },
-    nav: {
+    liveVisitors: { active: 'online', total: 'total visits' },
+            nav: {
       features: 'Features',
       premium: 'Premium',
       screenshots: 'Screenshots',
@@ -235,8 +235,8 @@ export const locales = {
     code: 'vi',
     name: 'Tiếng Việt',
     flag: '🇻🇳',
-    liveVisitors: { text: 'người đang đọc cùng bạn' },
-    nav: {
+    liveVisitors: { active: 'đang truy cập', total: 'tổng truy cập' },
+            nav: {
       features: 'Tính năng',
       premium: 'Premium',
       screenshots: 'Ảnh chụp',
@@ -467,8 +467,8 @@ export const locales = {
     code: 'zh',
     name: '中文',
     flag: '🇨🇳',
-    liveVisitors: { text: '人正在和您一起阅读' },
-    nav: {
+    liveVisitors: { active: '在线', total: '总访问量' },
+            nav: {
       features: '功能',
       premium: '高级版',
       screenshots: '截图',
@@ -616,8 +616,8 @@ export const locales = {
     code: 'ja',
     name: '日本語',
     flag: '🇯🇵',
-    liveVisitors: { text: '人と同じページを見ています' },
-    nav: {
+    liveVisitors: { active: 'オンライン', total: '総訪問者数' },
+            nav: {
       features: '機能',
       premium: 'プレミアム',
       screenshots: 'スクリーンショット',
@@ -772,8 +772,8 @@ export const locales = {
     code: 'fr',
     name: 'Français',
     flag: '🇫🇷',
-    liveVisitors: { text: 'personnes lisent avec vous' },
-    nav: {
+    liveVisitors: { active: 'en ligne', total: 'visites totales' },
+            nav: {
       features: 'Fonctionnalités',
       premium: 'Premium',
       screenshots: 'Captures',
@@ -921,8 +921,8 @@ export const locales = {
     code: 'pt',
     name: 'Português',
     flag: '🇧🇷',
-    liveVisitors: { text: 'pessoas lendo com você' },
-    nav: {
+    liveVisitors: { active: 'online', total: 'visitas totais' },
+            nav: {
       features: 'Recursos',
       premium: 'Premium',
       screenshots: 'Capturas',
