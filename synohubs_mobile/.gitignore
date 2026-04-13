@@ -1,0 +1,69 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.wrangler/
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+.packages
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# ========== SENSITIVE FILES - DO NOT COMMIT ==========
+# Firebase configuration (contains API keys)
+android/app/google-services.json
+lib/firebase_options.dart
+
+# Signing keys
+android/key.properties
+*.keystore
+*.jks
+
+# Environment variables
+*.env
+*.env.local
+*.env.production
+
+# ========== Website (synohubs.com) ==========
+synohubs.com/node_modules/
+synohubs.com/dist/
+synohubs.com/.wrangler/
+
+# ========== HTML prototypes ==========
+html/

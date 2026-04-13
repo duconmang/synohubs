@@ -1,24 +1,24 @@
-import { Download as DownloadIcon, Smartphone, Monitor, Cpu } from 'lucide-react';
+import { Download as DownloadIcon, Smartphone } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
+import { useState, useEffect } from 'react';
 
-const APK_LINKS = {
-  arm64: {
-    label: 'ARM64 (v8a)',
-    url: 'https://drive.google.com/uc?export=download&id=1Ei7fGRxvlRriAZUpwkr020tc3quqWvjd',
-  },
-  armv7: {
-    label: 'ARMv7 (armeabi)',
-    url: 'https://drive.google.com/uc?export=download&id=1I14nsdTwqOe2GrbiVk0N7fCSM6hVS9ws',
-  },
-  x86: {
-    label: 'x86_64',
-    url: 'https://drive.google.com/uc?export=download&id=1LlmkbyvikMZ-TRaf0w5YHc73c2qitvdC',
-  },
-};
+const VERSION_JSON_URL = '/releases/version.json';
 
 export default function Download() {
   const { t } = useI18n();
   const dl = t.download;
+  const [apkUrl, setApkUrl] = useState('#');
+  const [version, setVersion] = useState('');
+
+  useEffect(() => {
+    fetch(VERSION_JSON_URL)
+      .then(r => r.json())
+      .then(data => {
+        setApkUrl(data.apkUrl || '#');
+        setVersion(data.version || '');
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="download" className="section download-section">
@@ -33,31 +33,24 @@ export default function Download() {
           <Smartphone size={48} style={{ color: '#22d3ee', marginBottom: 24 }} />
 
           {/* Primary download */}
-          <a href={APK_LINKS.arm64.url} className="btn btn-primary" style={{ marginBottom: 12 }} rel="noopener noreferrer">
+          <a href={apkUrl} className="btn btn-primary" style={{ marginBottom: 12 }} rel="noopener noreferrer">
             <DownloadIcon size={18} /> {dl.androidBtn}
           </a>
-          <p style={{ fontSize: '.85rem', color: 'var(--text-dim)', marginBottom: 24 }}>{dl.recommended}</p>
 
-          {/* Architecture variants */}
-          <div className="download-variants">
-            {Object.entries(APK_LINKS).map(([key, apk]) => (
-              <a key={key} href={apk.url} className="download-variant" rel="noopener noreferrer">
-                <div className="variant-icon">
-                  {key === 'arm64' ? <Smartphone size={16} /> : key === 'armv7' ? <Cpu size={16} /> : <Monitor size={16} />}
-                </div>
-                <div className="variant-info">
-                  <div className="variant-label">{apk.label}</div>
-                  <div className="variant-desc">{dl.archDesc?.[key] || apk.label}</div>
-                </div>
-                <DownloadIcon size={14} style={{ color: 'var(--cyan)', opacity: .6 }} />
-              </a>
-            ))}
+          {/* Windows downloads */}
+          <div className="download-box">
+            <a href="/downloads/SynoHubs_0.1.0_x64-setup.exe" className="btn btn-secondary" rel="noopener noreferrer">
+              <DownloadIcon size={18} /> {dl.windowsExeBtn}
+            </a>
+            <a href="/downloads/SynoHubs_0.1.0_x64_en-US.msi" className="btn btn-secondary" rel="noopener noreferrer">
+              <DownloadIcon size={18} /> {dl.windowsMsiBtn}
+            </a>
           </div>
 
           <div className="version-info">
             <span>{dl.requirement}</span>
             <span>•</span>
-            <span>{dl.version}</span>
+            <span>{version ? `v${version}` : dl.version}</span>
           </div>
 
           {/* QR Code */}

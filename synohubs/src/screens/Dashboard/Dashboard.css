@@ -1,0 +1,472 @@
+/* ============================================
+   Dashboard — Premium NAS management layout
+   ============================================ */
+
+.dashboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dashboard__topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+.dashboard__topbar h1 { font-size: 15px; font-weight: 600; }
+.dashboard__topbar-spacer { flex: 1; }
+
+.dashboard__content {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* Grid */
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+/* Metric card */
+.metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color var(--transition);
+}
+
+.metric-card:hover { border-color: var(--color-border-hover); }
+
+.metric-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.metric-card__title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.metric-card__icon {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.metric-card__icon--green { background: rgba(74, 222, 128, 0.1); color: var(--color-accent); }
+.metric-card__icon--blue { background: rgba(59, 130, 246, 0.1); color: var(--color-info); }
+.metric-card__icon--amber { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
+
+/* ============================================
+   ROW 1: NAS Hero + Device Info
+   ============================================ */
+
+/* Hero card — spans 2 columns */
+.hero-card {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(145deg, rgba(13, 17, 23, 0.9), rgba(22, 27, 34, 0.95));
+  border: 1px solid rgba(34, 197, 94, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center top, rgba(34, 197, 94, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-card__image-area {
+  width: 200px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-card__nas-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.hero-card:hover .hero-card__nas-image {
+  transform: scale(1.05);
+}
+
+.hero-card__nas-placeholder {
+  color: var(--color-text-dim);
+  opacity: 0.3;
+}
+
+.hero-card__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.hero-card__badge--warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Device Info card */
+.info-card { grid-column: span 1; }
+
+.info-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.info-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.info-card__row:last-child { border-bottom: none; }
+
+.info-card__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.info-card__value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ============================================
+   ROW 2: CPU / Memory / Network (unchanged)
+   ============================================ */
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.gauge__circle {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+
+.gauge__circle svg { transform: rotate(-90deg); }
+
+.gauge__value {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.gauge__percent {
+  font-family: var(--font-mono);
+  font-size: 24px; font-weight: 700; line-height: 1;
+}
+
+.gauge__label { font-size: 10px; color: var(--color-text-dim); margin-top: 4px; }
+.gauge__sublabel { font-size: 11px; color: var(--color-text-secondary); text-align: center; }
+
+/* Network chart */
+.network-chart { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.network-chart__bars {
+  display: flex; align-items: flex-end; gap: 2px; height: 90px;
+}
+
+.network-chart__bar {
+  flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height 0.3s ease;
+}
+
+.network-chart__bar--up { background: var(--color-accent); opacity: 0.6; }
+
+.network-chart__legend {
+  display: flex; justify-content: center; gap: var(--space-lg); font-size: 11px;
+}
+
+.network-chart__legend-item {
+  display: flex; align-items: center; gap: 5px; color: var(--color-text-dim);
+}
+
+.network-chart__legend-dot { width: 6px; height: 6px; border-radius: 2px; }
+.network-chart__legend-dot--up { background: var(--color-accent); }
+.network-chart__legend-dot--down { background: var(--color-info); }
+.network-chart__legend-value { font-weight: 600; color: var(--color-text-secondary); font-family: var(--font-mono); }
+
+/* ============================================
+   ROW 3: Storage Capacity + Disk Health
+   ============================================ */
+
+/* Storage Capacity — spans 2 columns */
+.storage-capacity-card {
+  grid-column: span 2;
+}
+
+.storage-capacity {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Ring chart */
+.storage-ring {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.storage-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.storage-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.storage-ring__percent {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.storage-ring__size {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+/* Volume list */
+.storage-volumes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.storage-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.storage-vol-row__name {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.storage-vol-row__size {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.storage-vol-row__bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.storage-vol-row__fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #22C55E, #06B6D4);
+  transition: width 0.5s ease;
+}
+
+.storage-vol-row__fill--amber {
+  background: linear-gradient(90deg, #F59E0B, #EAB308);
+}
+
+.storage-vol-row__fill--red {
+  background: linear-gradient(90deg, #EF4444, #F97316);
+}
+
+/* Disk Health */
+.disk-health-card {
+  grid-column: span 1;
+}
+
+.disk-health__fs-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.disk-health__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.disk-health__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+}
+
+.disk-health__item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.disk-health__status-icon {
+  color: #22C55E;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.disk-health__status-icon--warn {
+  color: #F59E0B;
+}
+
+.disk-health__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.disk-health__bay {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.disk-health__model {
+  font-size: 10px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.disk-health__badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  flex-shrink: 0;
+}
+
+.disk-health__badge--warn {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+/* ============================================
+   ROW 4: Packages
+   ============================================ */
+
+.activity-card { grid-column: span 3; }
+.activity-table { width: 100%; border-collapse: collapse; }
+.activity-table th { text-align: left; font-size: 11px; font-weight: 500; color: var(--color-text-dim); padding: 6px var(--space-md); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--color-border); }
+.activity-table td { font-size: 12px; padding: 8px var(--space-md); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+.activity-table tr:last-child td { border-bottom: none; }
+.activity-table tr:hover td { background: var(--color-surface-2); }
+
+/* Spin animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

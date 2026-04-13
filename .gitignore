@@ -1,69 +1,52 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.wrangler/
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# ============================================
+# SynoHubs Monorepo — Unified .gitignore
+# ============================================
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
+# ── IDE / OS ──
 .idea/
-
-# VS Code
 .vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
-.packages
+# ── Flutter (synohubs_mobile) ──
+synohubs_mobile/.dart_tool/
+synohubs_mobile/.flutter-plugins
+synohubs_mobile/.flutter-plugins-dependencies
+synohubs_mobile/build/
+synohubs_mobile/.metadata
+synohubs_mobile/android/.gradle/
+synohubs_mobile/android/local.properties
+synohubs_mobile/android/app/google-services.json
+synohubs_mobile/.wrangler/
 
-# Symbolication related
-app.*.symbols
+# ── Tauri Desktop (synohubs) ──
+synohubs/node_modules/
+synohubs/dist/
+synohubs/src-tauri/target/
+synohubs/src-tauri/gen/
 
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# ========== SENSITIVE FILES - DO NOT COMMIT ==========
-# Firebase configuration (contains API keys)
-android/app/google-services.json
-lib/firebase_options.dart
-
-# Signing keys
-android/key.properties
-*.keystore
-*.jks
-
-# Environment variables
-*.env
-*.env.local
-*.env.production
-
-# ========== Website (synohubs.com) ==========
+# ── Website (synohubs.com) ──
 synohubs.com/node_modules/
 synohubs.com/dist/
 synohubs.com/.wrangler/
 
-# ========== HTML prototypes ==========
-html/
+# ── General ──
+node_modules/
+*.log
+*.lock
+!pubspec.lock
+
+# ── Secrets ──
+*.jks
+*.keystore
+key.properties
+.env
+.env.*
+
+# ── Gemini/Agent ──
+.agent/
+design-system/
+mockups/

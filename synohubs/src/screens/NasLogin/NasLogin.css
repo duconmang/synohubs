@@ -1,0 +1,538 @@
+/* ============================================
+   NAS Login — NAS Management Screen
+   ============================================ */
+
+.nas-login {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+/* Top bar */
+.nas-login__topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-md);
+  background: var(--color-bg);
+}
+
+.nas-login__search {
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 7px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition);
+}
+
+.nas-login__search:focus-within {
+  border-color: var(--color-accent-border);
+}
+
+.nas-login__search input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font-family: var(--font-main);
+  font-size: 13px;
+}
+
+.nas-login__search input::placeholder {
+  color: var(--color-text-dim);
+}
+
+.nas-login__topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Sidebar + Content */
+.nas-login__body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left sidebar nav */
+.nas-login__sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md) var(--space-sm);
+}
+
+.nas-login__sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-main);
+  font-size: 13px;
+}
+
+.nas-login__sidebar-item:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.nas-login__sidebar-item.active {
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+.nas-login__sidebar-bottom {
+  margin-top: auto;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.nas-login__user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.nas-login__user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.nas-login__user-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.nas-login__user-version {
+  font-size: 10px;
+  color: var(--color-text-dim);
+  padding-left: calc(var(--space-md) + 28px + var(--space-sm));
+}
+
+/* Content area */
+.nas-login__content {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+.nas-login__content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.nas-login__content-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.nas-login__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ============================================
+   NAS Cards Grid — Real device images
+   ============================================ */
+
+.nas-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-lg);
+}
+
+.nas-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.nas-card:hover {
+  border-color: var(--color-accent-border);
+  background: var(--color-surface-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.nas-card--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), 0 4px 16px rgba(74, 222, 128, 0.1);
+}
+
+/* Status dot */
+.nas-card__status-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+}
+
+.nas-card__status-dot--online {
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.nas-card__status-dot--offline {
+  background: var(--color-text-dim);
+}
+
+.nas-card__status-dot--connecting {
+  background: var(--color-warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* NAS Image */
+.nas-card__image {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm);
+}
+
+.nas-card__image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  transition: transform 0.25s ease;
+}
+
+.nas-card:hover .nas-card__image img {
+  transform: scale(1.05);
+}
+
+.nas-card__image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-lg);
+}
+
+/* NAS Info */
+.nas-card__info {
+  width: 100%;
+  text-align: center;
+}
+
+.nas-card__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.nas-card__model {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.nas-card__detail {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.nas-card__host {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+/* Rename input */
+.nas-card__rename {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.nas-card__rename-input {
+  background: var(--color-bg);
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 8px;
+  width: 140px;
+  text-align: center;
+  outline: none;
+}
+
+.nas-card__rename-btn {
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-bg);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Action buttons overlay */
+.nas-card__actions {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.nas-card:hover .nas-card__actions {
+  opacity: 1;
+}
+
+.nas-card__action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.nas-card__action-btn:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border-color: var(--color-accent-border);
+}
+
+.nas-card__action-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Connected badge */
+.nas-card__connected-badge {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 14px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+/* ============================================
+   Form Modal
+   ============================================ */
+
+.nas-login__form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.nas-login__form-card {
+  width: 440px;
+  max-width: 90vw;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  animation: slideUp 0.3s ease;
+}
+
+.nas-login__form-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nas-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.nas-login__form-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  margin-top: var(--space-md);
+}
+
+/* Input hint */
+.input-hint {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 4px;
+}
+
+/* Secondary button */
+.btn-secondary {
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-accent-border);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status message */
+.nas-login__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  margin-top: var(--space-md);
+}
+
+.nas-login__status--connecting,
+.nas-login__status--testing {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: var(--color-info);
+}
+
+.nas-login__status--error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+}
+
+.nas-login__status--success {
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.15);
+  color: var(--color-success);
+}
+
+.nas-login__status .spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-top-color: var(--color-info);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Empty state */
+.nas-login__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-xl);
+  color: var(--color-text-dim);
+  text-align: center;
+  gap: var(--space-md);
+}
+
+.nas-login__empty h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.nas-login__empty p {
+  font-size: 13px;
+  max-width: 300px;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

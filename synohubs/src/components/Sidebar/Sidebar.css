@@ -1,0 +1,162 @@
+/* ============================================
+   NavSidebar — Feature navigation for selected NAS
+   ============================================ */
+
+.nav-sidebar {
+  width: 170px;
+  min-width: 170px;
+  background: rgba(17, 19, 23, 0.78);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+/* NAS label header */
+.nav-sidebar__nas-label {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.nav-sidebar__nas-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-sidebar__nas-model {
+  display: block;
+  font-size: 10px;
+  color: var(--color-accent);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Nav items */
+.nav-sidebar__nav {
+  flex: 1;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-main);
+  font-size: 12px;
+}
+
+.sidebar__item:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.sidebar__item.active {
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+.sidebar__item-icon {
+  flex-shrink: 0;
+}
+
+/* Per-icon colors — semantic palette */
+.icon--dashboard { color: #22d3ee; }   /* Cyan */
+.icon--files     { color: #fbbf24; }   /* Amber */
+.icon--media     { color: #a78bfa; }   /* Purple */
+.icon--photos    { color: #f472b6; }   /* Pink */
+.icon--monitor   { color: #fb923c; }   /* Orange */
+.icon--users     { color: #60a5fa; }   /* Blue */
+.icon--packages  { color: #34d399; }   /* Emerald */
+.icon--docker    { color: #38bdf8; }   /* Sky/Docker blue */
+.icon--settings  { color: #94a3b8; }   /* Slate */
+
+/* Active state overrides icon color to accent */
+.sidebar__item.active .sidebar__item-icon {
+  color: var(--color-accent);
+}
+
+.sidebar__item-label {
+  white-space: nowrap;
+}
+
+.sidebar__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-dim);
+  padding: 12px 10px 4px;
+}
+
+/* Bottom */
+.nav-sidebar__bottom {
+  padding: 8px 6px;
+  border-top: 1px solid var(--color-border);
+}
+
+.nav-sidebar__version {
+  font-size: 9px;
+  color: var(--color-text-dim);
+  padding: 4px 10px;
+}
+
+/* Locked items (premium-only for free users) */
+.sidebar__item--locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sidebar__item--locked:hover {
+  background: none;
+  color: var(--color-text-dim);
+}
+
+.sidebar__item-lock {
+  margin-left: auto;
+  color: var(--color-warning);
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+}
+
+/* VIP Upgrade badge */
+.nav-sidebar__upgrade {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin: 4px 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  color: #FFD700;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all var(--transition);
+  width: 100%;
+}
+
+.nav-sidebar__upgrade:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.1);
+}

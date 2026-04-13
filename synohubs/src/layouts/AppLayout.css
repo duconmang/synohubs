@@ -1,0 +1,75 @@
+/* ============================================
+   AppLayout — 3-column: NAS Sidebar + Nav + Content
+   ============================================ */
+
+.app-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  position: relative;
+}
+
+/* Cybertech background — covers entire window */
+.app-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('../assets/cybertech-bg.png') center/cover no-repeat;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-layout > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-layout__body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.app-layout__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+
+/* Empty state when no NAS selected */
+.app-layout__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-text-dim);
+  text-align: center;
+  padding: 48px;
+}
+
+.app-layout__empty-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  filter: grayscale(0.3);
+}
+
+.app-layout__empty h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-heading);
+}
+
+.app-layout__empty p {
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.5;
+}

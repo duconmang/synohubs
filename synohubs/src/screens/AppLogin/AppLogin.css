@@ -1,0 +1,187 @@
+/* ============================================
+   App Login Screen — Xermius-inspired
+   Clean, centered, dark flat
+   ============================================ */
+
+.app-login {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+  -webkit-app-region: drag;
+}
+
+.app-login__card,
+.app-login a,
+.app-login button {
+  -webkit-app-region: no-drag;
+}
+
+/* Floating traffic lights on login */
+.login-traffic-lights {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  -webkit-app-region: no-drag;
+}
+
+/* Cybertech background for login */
+.app-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('../../assets/cybertech-bg.png') center/cover no-repeat;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-login__card {
+  width: 380px;
+  max-width: 90vw;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3xl) var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  animation: slideUp 0.4s ease forwards;
+  position: relative;
+  z-index: 1;
+}
+
+.app-login__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.app-login__title {
+  font-family: var(--font-main);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.app-login__subtitle {
+  font-size: 13px;
+  color: var(--color-text-dim);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.app-login__google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 20px;
+  background: #FFFFFF;
+  color: #1F1F1F;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.app-login__google-btn:hover {
+  background: #F0F0F0;
+}
+
+.app-login__google-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.app-login__google-btn .spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #E5E7EB;
+  border-top-color: #1F1F1F;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.app-login__tier-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  width: 100%;
+  justify-content: center;
+}
+
+.app-login__tier-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.app-login__tier-badge span:first-child {
+  font-size: 10px;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.app-login__tier-badge span:last-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.app-login__tier-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--color-border);
+}
+
+.app-login__terms {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.app-login__terms a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.app-login__terms a:hover { color: var(--color-accent); }
+
+.app-login__error {
+  width: 100%;
+  padding: var(--space-md);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: var(--radius-md);
+  color: var(--color-danger);
+  font-size: 12px;
+  text-align: center;
+}
+
+.app-login__version {
+  position: absolute;
+  bottom: var(--space-lg);
+  font-size: 11px;
+  color: var(--color-text-dim);
+  z-index: 1;
+}

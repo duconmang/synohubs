@@ -71,9 +71,15 @@ export default function Premium() {
             </div>
 
             <div className="vip-modal-body">
-              <div className="vip-modal-qr">
-                <img src="/assets/paypal-qr.jpg" alt="PayPal QR" />
-                <p className="vip-modal-qr-label">{donate.scanLabel || 'Scan to pay via PayPal'}</p>
+              <div className="vip-modal-qr-row">
+                <div className="vip-modal-qr">
+                  <img src="/assets/paypal-qr.jpg" alt="PayPal QR" />
+                  <p className="vip-modal-qr-label">{donate.scanLabel || 'Scan to pay via PayPal'}</p>
+                </div>
+                <div className="vip-modal-qr">
+                  <img src="/assets/TPBank.jpg" alt="TPBank QR" />
+                  <p className="vip-modal-qr-label">{donate.bankLabel || 'Chuyển khoản ngân hàng'}</p>
+                </div>
               </div>
 
               <div className="vip-modal-steps">
