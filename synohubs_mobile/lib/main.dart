@@ -23,6 +23,7 @@ import 'services/nas_profile_store.dart';
 import 'services/user_tier_provider.dart';
 import 'widgets/synohub_app_bar.dart';
 import 'widgets/bottom_nav_bar.dart';
+import 'widgets/mini_player.dart';
 
 /// Accept self-signed certificates ONLY for known NAS hosts.
 /// Google, TMDB, and all other HTTPS connections keep full cert validation.
@@ -251,7 +252,14 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SynoHubAppBar(onDisconnect: widget.onDisconnect),
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(index: _currentIndex, children: _screens),
+          ),
+          const MiniPlayer(),
+        ],
+      ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTap,
