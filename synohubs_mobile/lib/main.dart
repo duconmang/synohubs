@@ -21,6 +21,7 @@ import 'services/session_manager.dart';
 import 'services/google_auth_service.dart';
 import 'services/nas_profile_store.dart';
 import 'services/user_tier_provider.dart';
+import 'services/audio_service.dart' as audio;
 import 'widgets/synohub_app_bar.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'widgets/mini_player.dart';
@@ -51,6 +52,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await audio.AudioService.initNotification();
+  } catch (e) {
+    debugPrint('[main] Audio notification init failed: $e');
+  }
   HttpOverrides.global = NasCertOverrides();
   await LocaleProvider.instance.load();
   SystemChrome.setSystemUIOverlayStyle(

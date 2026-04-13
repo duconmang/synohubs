@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audio_service/audio_service.dart' as audio_svc;
 import 'session_manager.dart';
 
 // ── Audio Track Model ──────────────────────────────────────────
@@ -128,6 +129,7 @@ class AudioService extends ChangeNotifier {
     _player.stream.playing.listen((playing) {
       if (_isPlaying != playing) {
         _isPlaying = playing;
+        _syncNotificationPlaybackState();
         notifyListeners();
       }
     });
@@ -137,6 +139,7 @@ class AudioService extends ChangeNotifier {
     });
     _player.stream.duration.listen((dur) {
       _duration = dur;
+      _syncNotificationPlaybackState();
       notifyListeners();
     });
     _player.stream.completed.listen((completed) {
@@ -155,6 +158,22 @@ class AudioService extends ChangeNotifier {
   static AudioService get instance => _instance;
 
   late final Player _player;
+  _SynoAudioHandler? _handler;
+
+  /// Initialize media session & notification. Call once from main().
+  static Future<void> initNotification() async {
+    final handler = await audio_svc.AudioService.init(
+      builder: () => _SynoAudioHandler(),
+      config: const audio_svc.AudioServiceConfig(
+        androidNotificationChannelId: 'com.synohub.audio',
+        androidNotificationChannelName: 'SynoHub Music',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+      ),
+    );
+    _instance._handler = handler;
+  }
 
   // ── State ──
   AudioTrack? _currentTrack;
@@ -219,7 +238,43 @@ class AudioService extends ChangeNotifier {
       );
     }
 
+    // Update notification metadata
+    _syncNotificationMediaItem(track);
+
     await _player.open(Media(url));
+  }
+
+  // ── Notification sync helpers ──
+
+  void _syncNotificationMediaItem(AudioTrack track) {
+    _handler?.mediaItem.add(audio_svc.MediaItem(
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      album: track.album,
+      duration: _duration,
+    ));
+  }
+
+  void _syncNotificationPlaybackState() {
+    _handler?.playbackState.add(audio_svc.PlaybackState(
+      controls: [
+        audio_svc.MediaControl.skipToPrevious,
+        _isPlaying ? audio_svc.MediaControl.pause : audio_svc.MediaControl.play,
+        audio_svc.MediaControl.skipToNext,
+        audio_svc.MediaControl.stop,
+      ],
+      systemActions: const {
+        audio_svc.MediaAction.seek,
+        audio_svc.MediaAction.seekForward,
+        audio_svc.MediaAction.seekBackward,
+      },
+      androidCompactActionIndices: const [0, 1, 2],
+      processingState: audio_svc.AudioProcessingState.ready,
+      playing: _isPlaying,
+      updatePosition: _currentTime,
+      bufferedPosition: _duration,
+    ));
   }
 
   void togglePlay() {
@@ -310,6 +365,12 @@ class AudioService extends ChangeNotifier {
     _isPlaying = false;
     _currentTime = Duration.zero;
     _duration = Duration.zero;
+    // Clear notification
+    _handler?.playbackState.add(audio_svc.PlaybackState(
+      processingState: audio_svc.AudioProcessingState.idle,
+      playing: false,
+    ));
+    _handler?.mediaItem.add(null);
     notifyListeners();
   }
 
@@ -469,4 +530,32 @@ class AudioService extends ChangeNotifier {
       return (tracks: <AudioTrack>[], folders: <String>[]);
     }
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── Media Session Handler (Android notification + lock screen) ─
+// ═══════════════════════════════════════════════════════════════
+
+/// Bridges Android MediaSession controls → our AudioService.
+/// When user taps play/pause/next/prev on notification, these methods fire.
+class _SynoAudioHandler extends audio_svc.BaseAudioHandler
+    with audio_svc.SeekHandler {
+  @override
+  Future<void> play() async => AudioService.instance.togglePlay();
+
+  @override
+  Future<void> pause() async => AudioService.instance.togglePlay();
+
+  @override
+  Future<void> stop() async => AudioService.instance.stop();
+
+  @override
+  Future<void> skipToNext() async => AudioService.instance.nextTrack();
+
+  @override
+  Future<void> skipToPrevious() async => AudioService.instance.prevTrack();
+
+  @override
+  Future<void> seek(Duration position) async =>
+      AudioService.instance.seek(position);
 }

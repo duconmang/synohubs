@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,6 +69,24 @@ class _MediaFile {
     clean = clean.replaceAll('.', ' ').replaceAll('_', ' ');
     return clean;
   }
+
+  Map<String, dynamic> toJson() => {
+        'path': path,
+        'name': name,
+        'folderName': folderName,
+        'isDir': isDir,
+        'size': size,
+        'mtime': mtime,
+      };
+
+  factory _MediaFile.fromJson(Map<String, dynamic> j) => _MediaFile(
+        path: j['path'] as String? ?? '',
+        name: j['name'] as String? ?? '',
+        folderName: j['folderName'] as String? ?? '',
+        isDir: j['isDir'] as bool? ?? false,
+        size: j['size'] as int? ?? 0,
+        mtime: j['mtime'] as int? ?? 0,
+      );
 }
 
 class MediaHubScreen extends StatefulWidget {
@@ -109,6 +128,60 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
     super.initState();
     _loadShares();
     _loadTmdbApiKey();
+    _loadCachedVideoLibrary();
+  }
+
+  // ── NAS cache key (host + account) ─────────────────────────
+
+  static const _videoCachePrefix = 'synohubs_video_library_';
+
+  String get _nasCacheKey {
+    final sm = SessionManager.instance;
+    final id = '${sm.host}:${sm.port}_${sm.account}';
+    return '$_videoCachePrefix${id.hashCode}';
+  }
+
+  Future<void> _loadCachedVideoLibrary() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_nasCacheKey);
+    if (raw == null) return;
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final folder = data['folder'] as String?;
+      final folderName = data['folderName'] as String?;
+      final files = (data['files'] as List)
+          .map((j) => _MediaFile.fromJson(j as Map<String, dynamic>))
+          .toList();
+      if (mounted && files.isNotEmpty) {
+        // Rebuild folder groups
+        final groups = <String, List<_MediaFile>>{};
+        for (final f in files) {
+          groups.putIfAbsent(f.folderName, () => []).add(f);
+        }
+        setState(() {
+          _selectedFolder = folder;
+          _selectedFolderName = folderName;
+          _allMedia = files;
+          _folderGroups = groups;
+        });
+        // Fetch TMDB covers in background
+        _fetchTmdbCovers();
+      }
+    } catch (e) {
+      debugPrint('[MediaHub] Failed to load cached video lib: $e');
+    }
+  }
+
+  Future<void> _saveVideoLibrary() async {
+    if (_allMedia.isEmpty || _selectedFolder == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final data = {
+      'folder': _selectedFolder,
+      'folderName': _selectedFolderName,
+      'files': _allMedia.map((f) => f.toJson()).toList(),
+      'lastScan': DateTime.now().millisecondsSinceEpoch,
+    };
+    await prefs.setString(_nasCacheKey, jsonEncode(data));
   }
 
   // ── Data loading ─────────────────────────────────────────────
@@ -212,6 +285,8 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
       // Sort all media by mtime descending (newest first)
       _allMedia.sort((a, b) => b.mtime.compareTo(a.mtime));
       if (mounted) setState(() => _scanning = false);
+      // Persist scanned library
+      _saveVideoLibrary();
       // Fetch TMDB covers in background
       _fetchTmdbCovers();
     } catch (e) {

@@ -1,7 +1,7 @@
 {
-    "apkUrl": "https://github.com/duconmang/synohubs/releases/download/v1.1.0/SynoHubs-1.1.0.apk",
-    "buildNumber": 4,
-    "releaseNotes": "Music system: AudioService, MiniPlayer, Music Tab with Artist/Album views",
-    "version": "1.1.0",
-    "minVersion": "1.0.0"
+  "apkUrl": "https://github.com/duconmang/synohubs/releases/download/v1.2.0/SynoHubs-1.2.0.apk",
+  "buildNumber": 5,
+  "releaseNotes": "Media notification controls, video library cache, lock screen controls",
+  "version": "1.2.0",
+  "minVersion": "1.0.0"
 }
