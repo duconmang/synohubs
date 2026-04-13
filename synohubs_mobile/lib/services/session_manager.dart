@@ -287,13 +287,17 @@ class SessionManager extends ChangeNotifier {
 
     // Memory
     final mem = util['memory'] as Map<String, dynamic>? ?? {};
-    final ramTotal = (mem['total_real'] as num?)?.toInt() ?? 0;
+    final ramTotalKb = (mem['total_real'] as num?)?.toInt() ?? 0;
     final ramAvail = (mem['avail_real'] as num?)?.toInt() ?? 0;
     final ramBuffer = (mem['buffer'] as num?)?.toInt() ?? 0;
     final ramCached = (mem['cached'] as num?)?.toInt() ?? 0;
-    final ramTotalMb = ramTotal ~/ 1024;
+    // DSM Info reports physical DIMM capacity in MB (ram_size),
+    // which is more accurate than kernel's total_real on some NAS models.
+    final physicalRamMb = (dsm['ram_size'] as num?)?.toInt() ?? 0;
+    final ramTotalMb = physicalRamMb > 0 ? physicalRamMb : ramTotalKb ~/ 1024;
     // Actual used = total - free - buffer - cached (matches DSM Resource Monitor)
-    final ramUsedMb = (ramTotal - ramAvail - ramBuffer - ramCached) ~/ 1024;
+    final ramUsedKb = ramTotalKb - ramAvail - ramBuffer - ramCached;
+    final ramUsedMb = ramTotalKb > 0 ? ramUsedKb ~/ 1024 : 0;
 
     // Volumes
     final volumesList = storage['volumes'] as List? ?? [];

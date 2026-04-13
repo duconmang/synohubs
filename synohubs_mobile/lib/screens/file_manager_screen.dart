@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../services/session_manager.dart';
 import '../services/synology_api.dart';
@@ -72,7 +73,23 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
   @override
   void initState() {
     super.initState();
+    _loadViewPreference();
     _loadCurrent();
+  }
+
+  /// Load saved view mode preference
+  Future<void> _loadViewPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isGrid = prefs.getBool('file_manager_grid_view') ?? false;
+    if (mounted && isGrid != _gridView) {
+      setState(() => _gridView = isGrid);
+    }
+  }
+
+  /// Save view mode preference
+  Future<void> _saveViewPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('file_manager_grid_view', _gridView);
   }
 
   @override
@@ -1303,7 +1320,10 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
       tooltip: _gridView
           ? AppLocalizations.of(context)!.listView
           : AppLocalizations.of(context)!.gridView,
-      onPressed: () => setState(() => _gridView = !_gridView),
+      onPressed: () {
+        setState(() => _gridView = !_gridView);
+        _saveViewPreference();
+      },
     );
   }
 

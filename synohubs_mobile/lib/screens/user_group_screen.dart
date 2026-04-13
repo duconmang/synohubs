@@ -135,6 +135,29 @@ class _UserGroupScreenState extends State<UserGroupScreen>
     }
   }
 
+  /// Detect if a user is disabled/expired.
+  /// Handles multiple DSM response formats:
+  ///  - expired: "true" (string)
+  ///  - expired: true (bool)
+  ///  - expired: {"expired": "true"} (nested object)
+  ///  - enabled: false / "false" (some DSM versions)
+  bool _isUserDisabled(Map<String, dynamic> user) {
+    final exp = user['expired'];
+    // Nested object: {"expired": "true"}
+    if (exp is Map) {
+      final inner = exp['expired'];
+      if (inner == true || inner == 'true' || inner == 'True') return true;
+    }
+    // Direct string or bool
+    if (exp == true || exp == 'true' || exp == 'True') return true;
+    // Some DSM versions use 'enabled' field
+    final enabled = user['enabled'];
+    if (enabled == false || enabled == 'false' || enabled == 'False') {
+      return true;
+    }
+    return false;
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   // TAB 1: Users
   // ═══════════════════════════════════════════════════════════════════
@@ -199,10 +222,7 @@ class _UserGroupScreenState extends State<UserGroupScreen>
     final name = user['name'] as String? ?? '';
     final desc = user['description'] as String? ?? '';
     final email = user['email'] as String? ?? '';
-    final expired =
-        user['expired'] == true ||
-        user['expired'] == 'true' ||
-        user['expired'] == 'True';
+    final expired = _isUserDisabled(user);
     final isAdmin = name == 'admin' || (user['is_manager'] == true);
 
     final statusColor = expired ? AppColors.error : AppColors.secondary;
@@ -523,10 +543,7 @@ class _UserGroupScreenState extends State<UserGroupScreen>
     final name = user['name'] as String? ?? '';
     final desc = user['description'] as String? ?? '';
     final email = user['email'] as String? ?? '';
-    final expired =
-        user['expired'] == true ||
-        user['expired'] == 'true' ||
-        user['expired'] == 'True';
+    final expired = _isUserDisabled(user);
     final isAdmin = name == 'admin' || (user['is_manager'] == true);
     final avatarColor = _avatarColor(name);
 

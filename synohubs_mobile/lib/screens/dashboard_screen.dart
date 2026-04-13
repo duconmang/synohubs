@@ -8,6 +8,9 @@ import '../widgets/glass_card.dart';
 import 'resource_monitor_screen.dart';
 import 'storage_manager_screen.dart';
 import 'log_center_screen.dart';
+import 'docker_screen.dart';
+import 'packages_screen.dart';
+import 'user_group_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -895,6 +898,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const LogCenterScreen()),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Row 2: Docker + Packages + Users & Groups (admin only)
+          Row(
+            children: [
+              Expanded(
+                child: _actionButton(
+                  Icons.cloud,
+                  'Docker',
+                  const Color(0xFF38bdf8),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DockerScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _actionButton(
+                  Icons.apps,
+                  l.installedPackages,
+                  const Color(0xFFa78bfa),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PackagesScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _actionButton(
+                  Icons.people,
+                  l.userAndGroup,
+                  const Color(0xFFfbbf24),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserGroupScreen()),
                   ),
                 ),
               ),

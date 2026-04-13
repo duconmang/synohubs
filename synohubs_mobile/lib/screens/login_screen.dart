@@ -41,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _loading = false;
   bool _rememberMe = true;
   String? _error;
+  String? _originalAddress; // Preserve original QC ID for saving
 
   late final AnimationController _bgAnim;
 
@@ -94,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen>
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
     );
     if (_rememberMe) {
-      await storage.write(key: 'nas_host', value: _addressCtrl.text.trim());
+      await storage.write(key: 'nas_host', value: _originalAddress ?? _addressCtrl.text.trim());
       await storage.write(key: 'nas_port', value: _portCtrl.text.trim());
       await storage.write(key: 'nas_user', value: _usernameCtrl.text.trim());
       await storage.write(key: 'nas_pass', value: _passwordCtrl.text);
@@ -174,6 +175,7 @@ class _LoginScreenState extends State<LoginScreen>
       });
 
       try {
+        _originalAddress = rawAddr; // Save original QC input
         final qcId = QuickConnectResolver.extractId(rawAddr);
         final result = await QuickConnectResolver.resolve(qcId);
         if (!mounted) return;

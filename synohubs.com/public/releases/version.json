@@ -1,7 +1,7 @@
 {
-  "apkUrl": "https://github.com/duconmang/synohubs/releases/download/v1.2.1/SynoHubs-1.2.1.apk",
-  "buildNumber": 6,
-  "releaseNotes": "Premium badge, update check after login, video cache, media notification",
-  "version": "1.2.1",
+  "apkUrl": "https://github.com/duconmang/synohubs/releases/download/v1.2.2/SynoHubs-1.2.2.apk",
+  "buildNumber": 7,
+  "releaseNotes": "Docker & Package management, QuickConnect fix, RAM display fix, File Station view persistence",
+  "version": "1.2.2",
   "minVersion": "1.0.0"
 }

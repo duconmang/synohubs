@@ -35,6 +35,12 @@ class QuickConnectResolver {
   /// `http://quickconnect.to/teknasarc`
   static bool isQuickConnect(String input) {
     final cleaned = input.trim().toLowerCase();
+    // Already-resolved SmartDNS hostnames (e.g. syn4-xxx.teknasarc.direct.quickconnect.to)
+    // are NOT QuickConnect IDs — they are resolved addresses.
+    if (cleaned.contains('.direct.quickconnect.to') ||
+        cleaned.contains('.relay.quickconnect.to')) {
+      return false;
+    }
     if (cleaned.contains('quickconnect.to')) return true;
     // Plain ID: only alphanumeric + hyphens, no dots, no colons, no slashes
     if (RegExp(r'^[a-zA-Z0-9][a-zA-Z0-9\-]{0,62}$').hasMatch(cleaned) &&

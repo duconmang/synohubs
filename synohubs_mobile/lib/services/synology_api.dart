@@ -267,6 +267,79 @@ class SynologyApi {
     });
   }
 
+  /// Start a package by its id.
+  Future<Map<String, dynamic>> packageStart(String id) async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Core.Package.Control',
+      'version': '1',
+      'method': 'start',
+      'id': id,
+    });
+  }
+
+  /// Stop a package by its id.
+  Future<Map<String, dynamic>> packageStop(String id) async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Core.Package.Control',
+      'version': '1',
+      'method': 'stop',
+      'id': id,
+    });
+  }
+
+  // ── Docker / Container Manager ──────────────────────────────────
+
+  /// List all Docker containers.
+  Future<Map<String, dynamic>> dockerList() async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Docker.Container',
+      'version': '1',
+      'method': 'list',
+      'limit': '-1',
+      'offset': '0',
+      'type': 'all',
+    });
+  }
+
+  /// Get resource usage for running containers.
+  Future<Map<String, dynamic>> dockerGetResources() async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Docker.Container.Resource',
+      'version': '1',
+      'method': 'get',
+    });
+  }
+
+  /// Start a Docker container by name.
+  Future<Map<String, dynamic>> dockerStart(String name) async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Docker.Container',
+      'version': '1',
+      'method': 'start',
+      'name': name,
+    });
+  }
+
+  /// Stop a Docker container by name.
+  Future<Map<String, dynamic>> dockerStop(String name) async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Docker.Container',
+      'version': '1',
+      'method': 'stop',
+      'name': name,
+    });
+  }
+
+  /// Restart a Docker container by name.
+  Future<Map<String, dynamic>> dockerRestart(String name) async {
+    return _get('entry.cgi', {
+      'api': 'SYNO.Docker.Container',
+      'version': '1',
+      'method': 'restart',
+      'name': name,
+    });
+  }
+
   // ── System Power ─────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> reboot() async {
