@@ -468,9 +468,9 @@ body {
 /* Platform cards grid */
 .dl-platforms {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto 32px;
 }
 
@@ -517,6 +517,14 @@ body {
   border-color: rgba(0,120,212,.3);
 }
 
+/* macOS accent */
+.dl-card--macos::before {
+  background: linear-gradient(90deg, #a78bfa, #c084fc);
+}
+.dl-card--macos:hover {
+  border-color: rgba(167,139,250,.3);
+}
+
 /* Icon circle */
 .dl-card__icon {
   width: 56px; height: 56px;
@@ -530,6 +538,10 @@ body {
 .dl-card__icon--windows {
   background: rgba(0,120,212,.12);
   color: #0078d4;
+}
+.dl-card__icon--macos {
+  background: rgba(167,139,250,.12);
+  color: #a78bfa;
 }
 
 /* Platform name & desc */
@@ -599,6 +611,16 @@ body {
   background: rgba(0,120,212,.08);
 }
 
+.dl-card__btn--macos {
+  background: linear-gradient(135deg, #a78bfa, #c084fc);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(167,139,250,.25);
+}
+.dl-card__btn--macos:hover {
+  box-shadow: 0 6px 24px rgba(167,139,250,.4);
+  transform: translateY(-1px);
+}
+
 /* Version badge */
 .dl-version {
   display: flex;
@@ -641,6 +663,12 @@ body {
     max-width: 360px;
   }
   .dl-card { padding: 28px 20px 24px; }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .dl-platforms {
+    grid-template-columns: 1fr 1fr;
+    max-width: 720px;
+  }
 }
 
 /* ========== FOOTER ========== */

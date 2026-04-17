@@ -17,7 +17,7 @@ export const locales = {
       title2: 'of Your Synology NAS',
       subtitle:
         'Monitor, manage files, stream media, and browse photos — all from one beautiful app. Zero cloud dependency. 100% private.',
-      downloadBtn: 'Download for Android',
+      downloadBtn: 'Downloads',
       learnMore: 'Learn More',
       stats: {
         languages: '6 Languages',
@@ -261,7 +261,7 @@ export const locales = {
       title2: 'Synology NAS Của Bạn',
       subtitle:
         'Giám sát, quản lý tệp, phát media và duyệt ảnh — tất cả từ một ứng dụng đẹp mắt. Không phụ thuộc cloud. 100% riêng tư.',
-      downloadBtn: 'Tải cho Android',
+      downloadBtn: 'Downloads',
       learnMore: 'Tìm hiểu thêm',
       stats: {
         languages: '6 Ngôn ngữ',
@@ -505,7 +505,7 @@ export const locales = {
       title2: '你的Synology NAS',
       subtitle:
         '监控、管理文件、流媒体播放和浏览照片——一个精美的应用全搞定。零云依赖，100%隐私。',
-      downloadBtn: '下载Android版',
+      downloadBtn: 'Downloads',
       learnMore: '了解更多',
       stats: {
         languages: '6种语言',
@@ -666,7 +666,7 @@ export const locales = {
       title2: 'あなたのSynology NAS',
       subtitle:
         '監視、ファイル管理、メディアストリーミング、写真閲覧—すべてを一つの美しいアプリで。クラウド不要。100%プライベート。',
-      downloadBtn: 'Android版ダウンロード',
+      downloadBtn: 'Downloads',
       learnMore: '詳しく見る',
       stats: {
         languages: '6言語対応',
@@ -834,7 +834,7 @@ export const locales = {
       title2: 'de Votre Synology NAS',
       subtitle:
         'Surveillez, gérez les fichiers, streamez des médias et parcourez vos photos — le tout depuis une seule app. Zéro dépendance cloud. 100% privé.',
-      downloadBtn: 'Télécharger pour Android',
+      downloadBtn: 'Downloads',
       learnMore: 'En savoir plus',
       stats: {
         languages: '6 Langues',
@@ -995,7 +995,7 @@ export const locales = {
       title2: 'do Seu Synology NAS',
       subtitle:
         'Monitore, gerencie arquivos, faça streaming e navegue em fotos — tudo em um app lindo. Zero dependência da nuvem. 100% privado.',
-      downloadBtn: 'Baixar para Android',
+      downloadBtn: 'Downloads',
       learnMore: 'Saiba Mais',
       stats: {
         languages: '6 Idiomas',
