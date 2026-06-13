@@ -1,9 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:audio_service/audio_service.dart' as audio_svc;
 import 'session_manager.dart';
+
+Map<String, dynamic> _jsonDecodeMap(String raw) =>
+    jsonDecode(raw) as Map<String, dynamic>;
+
+String _jsonEncodeMap(Map<String, dynamic> data) => jsonEncode(data);
 
 // ── Audio Track Model ──────────────────────────────────────────
 
@@ -496,37 +502,39 @@ class AudioService extends ChangeNotifier {
     return tracks;
   }
 
-  // ── Persistence ──────────────────────────────────────────────
+  // ── Persistence (file-based, off main thread) ───────────────
 
-  static const _libraryKeyPrefix = 'synohubs_audio_library_';
+  static Future<String> _cacheDir() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return dir.path;
+  }
 
-  /// Save scanned library to SharedPreferences.
   static Future<void> saveLibrary(
     String nasId,
     List<AudioTrack> tracks,
     List<String> folders,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = {
+    final dir = await _cacheDir();
+    final data = <String, dynamic>{
       'tracks': tracks.map((t) => t.toJson()).toList(),
       'folders': folders,
       'lastScan': DateTime.now().millisecondsSinceEpoch,
     };
-    await prefs.setString(
-      '$_libraryKeyPrefix$nasId',
-      jsonEncode(data),
-    );
+    final json = await compute(_jsonEncodeMap, data);
+    await File('$dir/audio_library_$nasId.json').writeAsString(json);
   }
 
-  /// Load cached library from SharedPreferences.
   static Future<({List<AudioTrack> tracks, List<String> folders})> loadLibrary(
       String nasId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('$_libraryKeyPrefix$nasId');
-    if (raw == null) return (tracks: <AudioTrack>[], folders: <String>[]);
+    final dir = await _cacheDir();
+    final file = File('$dir/audio_library_$nasId.json');
+    if (!file.existsSync()) {
+      return (tracks: <AudioTrack>[], folders: <String>[]);
+    }
 
     try {
-      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final raw = await file.readAsString();
+      final data = await compute(_jsonDecodeMap, raw);
       final tracks = (data['tracks'] as List)
           .map((j) => AudioTrack.fromJson(j as Map<String, dynamic>))
           .toList();

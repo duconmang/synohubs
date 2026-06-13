@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:path_provider/path_provider.dart';
 import '../theme/app_colors.dart';
 import '../services/session_manager.dart';
 import '../services/tmdb_service.dart';
@@ -92,6 +94,11 @@ class _MediaFile {
       );
 }
 
+Map<String, dynamic> _jsonDecodeMap(String raw) =>
+    jsonDecode(raw) as Map<String, dynamic>;
+
+String _jsonEncodeMap(Map<String, dynamic> data) => jsonEncode(data);
+
 class MediaHubScreen extends StatefulWidget {
   const MediaHubScreen({super.key});
 
@@ -134,29 +141,28 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
     _loadCachedVideoLibrary();
   }
 
-  // ── NAS cache key (host + account) ─────────────────────────
+  // ── File-based cache (off main thread) ──────────────────────
 
-  static const _videoCachePrefix = 'synohubs_video_library_';
-
-  String get _nasCacheKey {
+  String get _nasCacheFileName {
     final sm = SessionManager.instance;
-    final id = '${sm.host}:${sm.port}_${sm.account}';
-    return '$_videoCachePrefix${id.hashCode}';
+    final id = '${sm.host}:${sm.port}_${sm.account}'.hashCode;
+    return 'video_library_$id.json';
   }
 
   Future<void> _loadCachedVideoLibrary() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_nasCacheKey);
-    if (raw == null) return;
     try {
-      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/$_nasCacheFileName');
+      if (!file.existsSync()) return;
+
+      final raw = await file.readAsString();
+      final data = await compute(_jsonDecodeMap, raw);
       final folder = data['folder'] as String?;
       final folderName = data['folderName'] as String?;
       final files = (data['files'] as List)
           .map((j) => _MediaFile.fromJson(j as Map<String, dynamic>))
           .toList();
       if (mounted && files.isNotEmpty) {
-        // Rebuild folder groups
         final groups = <String, List<_MediaFile>>{};
         for (final f in files) {
           groups.putIfAbsent(f.folderName, () => []).add(f);
@@ -167,7 +173,6 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
           _allMedia = files;
           _folderGroups = groups;
         });
-        // Fetch TMDB covers in background
         _fetchTmdbCovers();
       }
     } catch (e) {
@@ -177,14 +182,15 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
 
   Future<void> _saveVideoLibrary() async {
     if (_allMedia.isEmpty || _selectedFolder == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    final data = {
+    final dir = await getApplicationDocumentsDirectory();
+    final data = <String, dynamic>{
       'folder': _selectedFolder,
       'folderName': _selectedFolderName,
       'files': _allMedia.map((f) => f.toJson()).toList(),
       'lastScan': DateTime.now().millisecondsSinceEpoch,
     };
-    await prefs.setString(_nasCacheKey, jsonEncode(data));
+    final json = await compute(_jsonEncodeMap, data);
+    await File('${dir.path}/$_nasCacheFileName').writeAsString(json);
   }
 
   // ── Data loading ─────────────────────────────────────────────
