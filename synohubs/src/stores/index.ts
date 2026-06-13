@@ -123,6 +123,7 @@ export interface NasConnection {
   quickconnect_id?: string;
   uptime?: string;
   is_admin?: boolean;
+  updatedAt?: string;      // ISO 8601 — for cross-device merge resolution
 }
 
 export interface SystemInfo {
@@ -203,17 +204,17 @@ async function persistEncrypted(connections: NasConnection[]) {
   }
 }
 
-/** Cloud sync for VIP users — NEVER sync passwords */
-async function cloudSync(connections: NasConnection[]) {
+/** Backup to Google Drive (all users with access_token) */
+async function driveBackup(connections: NasConnection[]) {
   const user = useAuthStore.getState().user;
-  if (!user || user.tier !== 'vip') return;
+  if (!user) return;
   try {
-    const { pushDevices } = await import('../services/syncService');
-    // Strip password + sid + device tokens before cloud sync
-    const safe = connections.map(({ password, sid, device_id, ...rest }) => ({ ...rest })) as NasConnection[];
-    await pushDevices(user.uid, safe);
+    const { getAccessToken } = await import('../services/authService');
+    if (!getAccessToken()) return;
+    const { backupToDrive } = await import('../services/driveService');
+    await backupToDrive(user.uid, connections);
   } catch (e) {
-    console.warn('Cloud sync failed:', e);
+    console.warn('Drive backup failed:', e);
   }
 }
 
@@ -251,19 +252,19 @@ export const useNasStore = create<NasState>((set) => ({
 
       set({ connections: localDevices });
 
-      // 2. Cloud sync for VIP users
-      const user = useAuthStore.getState().user;
-      if (user?.tier === 'vip') {
-        set({ isSyncing: true });
-        try {
-          const { syncDevices } = await import('../services/syncService');
-          const merged = await syncDevices(uid, localDevices);
+      // 2. Auto-sync with Google Drive (all users, if access_token available)
+      try {
+        const { getAccessToken } = await import('../services/authService');
+        if (getAccessToken()) {
+          set({ isSyncing: true });
+          const { syncOnSignIn } = await import('../services/driveService');
+          const merged = await syncOnSignIn(uid, localDevices);
           const safe = merged.map(c => ({ ...c, status: 'offline' as const, sid: undefined }));
           set({ connections: safe, isSyncing: false });
           await persistEncrypted(safe);
-        } catch {
-          set({ isSyncing: false });
         }
+      } catch {
+        set({ isSyncing: false });
       }
 
       // 3. Auto-check all connections in background
@@ -422,9 +423,10 @@ export const useNasStore = create<NasState>((set) => ({
 
   addConnection: (nas) => {
     set((state) => {
-      const connections = [...state.connections.filter((c) => c.id !== nas.id), nas];
+      const stamped = { ...nas, updatedAt: new Date().toISOString() };
+      const connections = [...state.connections.filter((c) => c.id !== nas.id), stamped];
       persistEncrypted(connections);
-      cloudSync(connections);
+      driveBackup(connections);
       return { connections };
     });
   },
@@ -433,7 +435,7 @@ export const useNasStore = create<NasState>((set) => ({
     set((state) => {
       const connections = state.connections.filter((c) => c.id !== id);
       persistEncrypted(connections);
-      cloudSync(connections);
+      driveBackup(connections);
       return {
         connections,
         activeNas: state.activeNas?.id === id ? null : state.activeNas,
@@ -456,10 +458,10 @@ export const useNasStore = create<NasState>((set) => ({
   updateConnection: (nas) => {
     set((state) => {
       const connections = state.connections.map((c) =>
-        c.id === nas.id ? { ...c, ...nas } : c
+        c.id === nas.id ? { ...c, ...nas, updatedAt: new Date().toISOString() } : c
       );
       persistEncrypted(connections);
-      cloudSync(connections);
+      driveBackup(connections);
       return { connections };
     });
   },

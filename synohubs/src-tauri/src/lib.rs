@@ -2361,7 +2361,7 @@ async fn google_auth_start(app: tauri::AppHandle) -> Result<String, String> {
         client_id={}&\
         redirect_uri={}&\
         response_type=id_token+token&\
-        scope=email%20profile%20openid&\
+        scope=email%20profile%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata&\
         nonce={}&\
         prompt=select_account",
         client_id, redirect_uri, nonce,
@@ -2389,12 +2389,11 @@ async fn google_auth_start(app: tauri::AppHandle) -> Result<String, String> {
 
         // Check if Firebase auth handler is being called with token
         if url_str.contains("synohubs.firebaseapp.com/__/auth/handler") {
-            // The token comes in the URL fragment (#id_token=xxx)
-            // Fragments are not sent to server but ARE visible in the URL
-            if let Some(token) = extract_token_from_url(&url_str) {
+            // Extract both id_token and access_token from URL fragment
+            if let Some(tokens_json) = extract_tokens_from_url(&url_str) {
                 if let Ok(mut guard) = tx_nav.lock() {
                     if let Some(sender) = guard.take() {
-                        let _ = sender.send(token);
+                        let _ = sender.send(tokens_json);
                     }
                 }
                 // Emit event to close window from main thread
@@ -2438,27 +2437,44 @@ async fn google_auth_start(app: tauri::AppHandle) -> Result<String, String> {
     }
 }
 
-/// Extract id_token from a URL (from fragment # or query ?)
-fn extract_token_from_url(url: &str) -> Option<String> {
-    // Check fragment first (#id_token=xxx)
+/// Extract id_token and access_token from URL fragment/query.
+/// Returns JSON: {"id_token":"...","access_token":"..."} or just id_token for backward compat.
+fn extract_tokens_from_url(url: &str) -> Option<String> {
+    let mut id_token: Option<String> = None;
+    let mut access_token: Option<String> = None;
+
+    // Parse fragment (#key=val&key=val)
     if let Some(fragment) = url.split('#').nth(1) {
         for param in fragment.split('&') {
-            if let Some(token) = param.strip_prefix("id_token=") {
-                return Some(token.to_string());
+            if let Some(t) = param.strip_prefix("id_token=") {
+                id_token = Some(t.to_string());
+            } else if let Some(t) = param.strip_prefix("access_token=") {
+                access_token = Some(t.to_string());
             }
         }
     }
-    // Check query (?id_token=xxx)
-    if let Some(query) = url.split('?').nth(1) {
-        for param in query.split('&') {
-            if let Some(token) = param.strip_prefix("id_token=") {
-                // Remove any fragment part
-                let token = token.split('#').next().unwrap_or(token);
-                return Some(token.to_string());
+    // Fallback: parse query
+    if id_token.is_none() {
+        if let Some(query) = url.split('?').nth(1) {
+            for param in query.split('&') {
+                if let Some(t) = param.strip_prefix("id_token=") {
+                    let t = t.split('#').next().unwrap_or(t);
+                    id_token = Some(t.to_string());
+                } else if let Some(t) = param.strip_prefix("access_token=") {
+                    let t = t.split('#').next().unwrap_or(t);
+                    access_token = Some(t.to_string());
+                }
             }
         }
     }
-    None
+
+    let id = id_token?;
+    let json = format!(
+        r#"{{"id_token":"{}","access_token":"{}"}}"#,
+        id,
+        access_token.unwrap_or_default()
+    );
+    Some(json)
 }
 
 // ── Encrypted Store ─────────────────────────────────────────
