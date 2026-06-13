@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'google_auth_service.dart';
+import 'nas_profile_store.dart';
+import '../models/nas_profile.dart';
 
 /// Backup/restore NAS configs to the user's own Google Drive.
 /// Uses the appDataFolder scope — files are hidden and only accessible
@@ -171,6 +174,30 @@ class GoogleDriveBackup {
     final keyBase64 = await _storage.read(key: _keyStorageKey);
     if (keyBase64 != null) {
       await _saveKeyToDrive(driveApi, keyBase64);
+    }
+  }
+
+  /// Auto-sync: pull from Drive → merge with local → push back.
+  /// Called once after Google sign-in. Silent on failure.
+  Future<void> syncOnSignIn() async {
+    try {
+      final store = NasProfileStore.instance;
+      await store.load();
+
+      // Pull from Drive
+      final remoteJson = await restore();
+      if (remoteJson != null && remoteJson.isNotEmpty) {
+        final remoteProfiles = NasProfile.decodeList(remoteJson);
+        await store.mergeFrom(remoteProfiles);
+      }
+
+      // Push merged state back to Drive
+      final merged = await store.exportJson();
+      await backup(merged);
+
+      debugPrint('[Sync] Auto-sync completed');
+    } catch (e) {
+      debugPrint('[Sync] Auto-sync failed (non-fatal): $e');
     }
   }
 

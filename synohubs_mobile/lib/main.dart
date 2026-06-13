@@ -19,6 +19,7 @@ import 'screens/media_hub_screen.dart';
 import 'screens/photos_screen.dart';
 import 'services/session_manager.dart';
 import 'services/google_auth_service.dart';
+import 'services/google_drive_backup.dart';
 import 'services/nas_profile_store.dart';
 import 'services/user_tier_provider.dart';
 import 'services/audio_service.dart' as audio;
@@ -138,6 +139,8 @@ class _AuthGateState extends State<AuthGate> {
       await NasProfileStore.instance.setUser(email);
       await NasProfileStore.instance.load();
       await UserTierProvider.instance.fetchTier(email);
+      // Auto-sync with Google Drive (fire-and-forget, non-blocking)
+      GoogleDriveBackup.instance.syncOnSignIn();
     }
 
     if (!mounted) return;
@@ -162,6 +165,8 @@ class _AuthGateState extends State<AuthGate> {
             await NasProfileStore.instance.setUser(email);
             await NasProfileStore.instance.load();
             UserTierProvider.instance.fetchTier(email);
+            // Auto-sync with Google Drive (fire-and-forget, non-blocking)
+            GoogleDriveBackup.instance.syncOnSignIn();
             if (mounted) setState(() => _state = _AppState.nasManager);
           },
         );

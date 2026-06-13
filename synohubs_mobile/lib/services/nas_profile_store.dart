@@ -74,6 +74,7 @@ class NasProfileStore {
   Future<void> update(NasProfile profile) async {
     final idx = _profiles.indexWhere((p) => p.id == profile.id);
     if (idx >= 0) {
+      profile.updatedAt = DateTime.now();
       _profiles[idx] = profile;
       await _save();
     }
@@ -103,6 +104,37 @@ class NasProfileStore {
   Future<void> importJson(String json) async {
     _profiles = NasProfile.decodeList(json);
     await _save();
+  }
+
+  /// Merge incoming profiles with local profiles.
+  /// Per-profile: newer updatedAt wins. New profiles are added.
+  /// Returns true if local data was changed.
+  Future<bool> mergeFrom(List<NasProfile> incoming) async {
+    await load();
+    final localMap = {for (final p in _profiles) p.id: p};
+    var changed = false;
+
+    for (final remote in incoming) {
+      final local = localMap[remote.id];
+      if (local == null) {
+        // New from remote — add it
+        _profiles.add(remote);
+        changed = true;
+      } else if (remote.updatedAt.isAfter(local.updatedAt)) {
+        // Remote is newer — update local, but keep local password if remote has none
+        final idx = _profiles.indexWhere((p) => p.id == remote.id);
+        if (idx >= 0) {
+          if (remote.password.isEmpty && local.password.isNotEmpty) {
+            remote.password = local.password;
+          }
+          _profiles[idx] = remote;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) await _save();
+    return changed;
   }
 
   /// Clear all stored data for current user.

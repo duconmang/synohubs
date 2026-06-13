@@ -12,6 +12,7 @@ class NasProfile {
   String? model; // detected after login, e.g. "DS923+"
   String? dsmVersion;
   DateTime? lastConnected;
+  DateTime updatedAt;
   bool isOnline;
 
   NasProfile({
@@ -25,8 +26,9 @@ class NasProfile {
     this.model,
     this.dsmVersion,
     this.lastConnected,
+    DateTime? updatedAt,
     this.isOnline = false,
-  });
+  }) : updatedAt = updatedAt ?? DateTime.now();
 
   bool get useHttps => protocol == 'https';
 
@@ -43,6 +45,7 @@ class NasProfile {
     'model': model,
     'dsmVersion': dsmVersion,
     'lastConnected': lastConnected?.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
   };
 
   factory NasProfile.fromJson(Map<String, dynamic> json) => NasProfile(
@@ -57,6 +60,9 @@ class NasProfile {
     dsmVersion: json['dsmVersion'] as String?,
     lastConnected: json['lastConnected'] != null
         ? DateTime.tryParse(json['lastConnected'] as String)
+        : null,
+    updatedAt: json['updatedAt'] != null
+        ? DateTime.tryParse(json['updatedAt'] as String)
         : null,
   );
 
