@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_colors.dart';
 import '../services/session_manager.dart';
 import '../services/tmdb_service.dart';
+import '../services/nas_cache_manager.dart';
 import 'video_player_screen.dart';
 import 'music_tab_view.dart';
 import '../l10n/app_localizations.dart';
@@ -186,17 +189,19 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
 
   // ── Data loading ─────────────────────────────────────────────
 
+  static const _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
   Future<void> _loadTmdbApiKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = prefs.getString('tmdb_api_key');
+    final key = await _secureStorage.read(key: 'tmdb_api_key');
     if (key != null && key.isNotEmpty) {
       TmdbService.instance.setApiKey(key);
     }
   }
 
   Future<void> _saveTmdbApiKey(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('tmdb_api_key', key);
+    await _secureStorage.write(key: 'tmdb_api_key', value: key);
     TmdbService.instance.setApiKey(key);
     if (_allMedia.isNotEmpty) {
       _fetchTmdbCovers();
@@ -333,8 +338,7 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
           _allMedia.add(entry);
           _folderGroups.putIfAbsent(folderDisplayName, () => []).add(entry);
           _scanCount++;
-          // Update UI every 10 files to avoid excessive rebuilds
-          if (_scanCount % 10 == 0 && mounted) {
+          if (_scanCount % 50 == 0 && mounted) {
             setState(() {});
           }
         }
@@ -1034,10 +1038,11 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
         children: [
           // Background image (TMDB backdrop or NAS thumbnail)
           if (heroImageUrl != null)
-            Image.network(
-              heroImageUrl,
+            CachedNetworkImage(
+              imageUrl: heroImageUrl,
+              cacheManager: NasCacheManager.instance,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorWidget: (_, __, ___) => Container(
                 color: AppColors.surfaceContainerHigh,
                 child: const Center(
                   child: Icon(
@@ -1511,10 +1516,11 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
                   children: [
                     // Thumbnail (TMDB poster or NAS thumbnail)
                     if (imageUrl != null && (file.isImage || file.isVideo))
-                      Image.network(
-                        imageUrl,
+                      CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        cacheManager: NasCacheManager.instance,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorWidget: (_, __, ___) =>
                             _buildMediaPlaceholder(file),
                       )
                     else

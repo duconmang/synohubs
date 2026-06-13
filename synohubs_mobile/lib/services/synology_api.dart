@@ -16,6 +16,7 @@ class SynologyApi {
 
   String? _sid;
   String? _resolvedIp; // Cached IP from DoH fallback
+  HttpClient? _persistentClient;
 
   SynologyApi({required this.host, required this.port, this.useHttps = true});
 
@@ -75,12 +76,20 @@ class SynologyApi {
 
   // ── HTTP helper ──────────────────────────────────────────────────
 
-  /// Build a [HttpClient] that accepts self-signed certs (typical on NAS).
-  HttpClient _buildClient() {
-    final client = HttpClient()
+  /// Get or create a persistent [HttpClient] that accepts self-signed certs.
+  /// Reuses TCP connections across requests for better performance on Android.
+  HttpClient _getClient() {
+    _persistentClient ??= HttpClient()
       ..connectionTimeout = const Duration(seconds: 10)
+      ..idleTimeout = const Duration(seconds: 30)
       ..badCertificateCallback = (cert, host, port) => true;
-    return client;
+    return _persistentClient!;
+  }
+
+  /// Close the persistent client (call on logout).
+  void closeClient() {
+    _persistentClient?.close();
+    _persistentClient = null;
   }
 
   Future<Map<String, dynamic>> _get(
@@ -93,16 +102,11 @@ class SynologyApi {
       '$baseUrl/$endpoint',
     ).replace(queryParameters: params);
 
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.getUrl(uri);
-      final response = await request.close();
-      final body = await response.transform(utf8.decoder).join();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-      return json;
-    } finally {
-      ioClient.close();
-    }
+    final request = await _getClient().getUrl(uri);
+    final response = await request.close();
+    final body = await response.transform(utf8.decoder).join();
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    return json;
   }
 
   /// POST helper for write operations (create, edit, delete).
@@ -114,28 +118,23 @@ class SynologyApi {
 
     final uri = Uri.parse('$baseUrl/$endpoint');
 
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.postUrl(uri);
-      request.headers.contentType = ContentType(
-        'application',
-        'x-www-form-urlencoded',
-        charset: 'utf-8',
-      );
-      final body = params.entries
-          .map(
-            (e) =>
-                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
-          )
-          .join('&');
-      request.write(body);
-      final response = await request.close();
-      final respBody = await response.transform(utf8.decoder).join();
-      final json = jsonDecode(respBody) as Map<String, dynamic>;
-      return json;
-    } finally {
-      ioClient.close();
-    }
+    final request = await _getClient().postUrl(uri);
+    request.headers.contentType = ContentType(
+      'application',
+      'x-www-form-urlencoded',
+      charset: 'utf-8',
+    );
+    final body = params.entries
+        .map(
+          (e) =>
+              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+        )
+        .join('&');
+    request.write(body);
+    final response = await request.close();
+    final respBody = await response.transform(utf8.decoder).join();
+    final json = jsonDecode(respBody) as Map<String, dynamic>;
+    return json;
   }
 
   // ── Authentication ───────────────────────────────────────────────
@@ -143,6 +142,7 @@ class SynologyApi {
   /// Login and obtain a session id.
   /// Returns the full API response map. Throws on network / parse errors.
   /// Pass [otpCode] for accounts with 2-step verification enabled.
+  /// Uses POST to avoid credentials appearing in URL/logs.
   Future<Map<String, dynamic>> login(
     String account,
     String passwd, {
@@ -162,7 +162,7 @@ class SynologyApi {
     if (otpCode != null && otpCode.isNotEmpty) {
       params['otp_code'] = otpCode;
     }
-    final resp = await _get('auth.cgi', params);
+    final resp = await _post('auth.cgi', params);
 
     if (resp['success'] == true) {
       _sid = resp['data']?['sid'] as String?;
@@ -170,7 +170,7 @@ class SynologyApi {
     return resp;
   }
 
-  /// Logout and clear the session.
+  /// Logout, clear the session, and close the HTTP client.
   Future<void> logout() async {
     if (_sid == null) return;
     try {
@@ -182,6 +182,7 @@ class SynologyApi {
       });
     } finally {
       _sid = null;
+      closeClient();
     }
   }
 
@@ -320,18 +321,13 @@ class SynologyApi {
         '&_sid=$sid';
 
     final uri = Uri.parse('$baseUrl/entry.cgi');
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.postUrl(uri);
-      request.headers.contentType = ContentType(
-          'application', 'x-www-form-urlencoded', charset: 'utf-8');
-      request.write(body);
-      final response = await request.close();
-      final respBody = await response.transform(utf8.decoder).join();
-      return jsonDecode(respBody) as Map<String, dynamic>;
-    } finally {
-      ioClient.close();
-    }
+    final request = await _getClient().postUrl(uri);
+    request.headers.contentType = ContentType(
+        'application', 'x-www-form-urlencoded', charset: 'utf-8');
+    request.write(body);
+    final response = await request.close();
+    final respBody = await response.transform(utf8.decoder).join();
+    return jsonDecode(respBody) as Map<String, dynamic>;
   }
 
   /// Step 2: Poll download status until finished.
@@ -341,18 +337,13 @@ class SynologyApi {
         '&method=check&taskid="$taskId"&_sid=$sid';
 
     final uri = Uri.parse('$baseUrl/entry.cgi');
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.postUrl(uri);
-      request.headers.contentType = ContentType(
-          'application', 'x-www-form-urlencoded', charset: 'utf-8');
-      request.write(body);
-      final response = await request.close();
-      final respBody = await response.transform(utf8.decoder).join();
-      return jsonDecode(respBody) as Map<String, dynamic>;
-    } finally {
-      ioClient.close();
-    }
+    final request = await _getClient().postUrl(uri);
+    request.headers.contentType = ContentType(
+        'application', 'x-www-form-urlencoded', charset: 'utf-8');
+    request.write(body);
+    final response = await request.close();
+    final respBody = await response.transform(utf8.decoder).join();
+    return jsonDecode(respBody) as Map<String, dynamic>;
   }
 
   /// Step 3: Install the downloaded package file with path + volume.
@@ -364,18 +355,13 @@ class SynologyApi {
         '&path="$filename"&volume="$volume"&_sid=$sid';
 
     final uri = Uri.parse('$baseUrl/entry.cgi');
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.postUrl(uri);
-      request.headers.contentType = ContentType(
-          'application', 'x-www-form-urlencoded', charset: 'utf-8');
-      request.write(body);
-      final response = await request.close();
-      final respBody = await response.transform(utf8.decoder).join();
-      return jsonDecode(respBody) as Map<String, dynamic>;
-    } finally {
-      ioClient.close();
-    }
+    final request = await _getClient().postUrl(uri);
+    request.headers.contentType = ContentType(
+        'application', 'x-www-form-urlencoded', charset: 'utf-8');
+    request.write(body);
+    final response = await request.close();
+    final respBody = await response.transform(utf8.decoder).join();
+    return jsonDecode(respBody) as Map<String, dynamic>;
   }
 
   // ── Docker / Container Manager ──────────────────────────────────
@@ -924,62 +910,57 @@ class SynologyApi {
       '$baseUrl/entry.cgi',
     ).replace(queryParameters: queryParams);
 
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.postUrl(uri);
+    final request = await _getClient().postUrl(uri);
 
-      final boundary = '----SynoHub${DateTime.now().millisecondsSinceEpoch}';
-      request.headers.set(
-        'Content-Type',
-        'multipart/form-data; boundary=$boundary',
-      );
+    final boundary = '----SynoHub${DateTime.now().millisecondsSinceEpoch}';
+    request.headers.set(
+      'Content-Type',
+      'multipart/form-data; boundary=$boundary',
+    );
 
-      // Form fields (path, create_parents, overwrite)
-      final fields = <String, String>{
-        'path': destFolderPath,
-        'create_parents': createParents.toString(),
-        'overwrite': overwrite.toString(),
-      };
+    // Form fields (path, create_parents, overwrite)
+    final fields = <String, String>{
+      'path': destFolderPath,
+      'create_parents': createParents.toString(),
+      'overwrite': overwrite.toString(),
+    };
 
-      final buffer = StringBuffer();
-      for (final entry in fields.entries) {
-        buffer.write('--$boundary\r\n');
-        buffer.write(
-          'Content-Disposition: form-data; name="${entry.key}"\r\n\r\n',
-        );
-        buffer.write('${entry.value}\r\n');
-      }
-
-      // File part — MUST be last for Synology API
+    final buffer = StringBuffer();
+    for (final entry in fields.entries) {
       buffer.write('--$boundary\r\n');
       buffer.write(
-        'Content-Disposition: form-data; name="file"; '
-        'filename="$fileName"\r\n',
+        'Content-Disposition: form-data; name="${entry.key}"\r\n\r\n',
       );
-      buffer.write('Content-Type: application/octet-stream\r\n\r\n');
+      buffer.write('${entry.value}\r\n');
+    }
 
-      final headerBytes = utf8.encode(buffer.toString());
-      final tailBytes = utf8.encode('\r\n--$boundary--\r\n');
+    // File part — MUST be last for Synology API
+    buffer.write('--$boundary\r\n');
+    buffer.write(
+      'Content-Disposition: form-data; name="file"; '
+      'filename="$fileName"\r\n',
+    );
+    buffer.write('Content-Type: application/octet-stream\r\n\r\n');
 
-      request.contentLength =
-          headerBytes.length + fileBytes.length + tailBytes.length;
-      request.add(headerBytes);
-      request.add(fileBytes);
-      request.add(tailBytes);
+    final headerBytes = utf8.encode(buffer.toString());
+    final tailBytes = utf8.encode('\r\n--$boundary--\r\n');
 
-      final response = await request.close();
-      final respBody = await response.transform(utf8.decoder).join();
-      try {
-        return jsonDecode(respBody) as Map<String, dynamic>;
-      } catch (_) {
-        // Synology sometimes returns HTML on error
-        return <String, dynamic>{
-          'success': false,
-          'error': {'code': -1, 'detail': respBody},
-        };
-      }
-    } finally {
-      ioClient.close();
+    request.contentLength =
+        headerBytes.length + fileBytes.length + tailBytes.length;
+    request.add(headerBytes);
+    request.add(fileBytes);
+    request.add(tailBytes);
+
+    final response = await request.close();
+    final respBody = await response.transform(utf8.decoder).join();
+    try {
+      return jsonDecode(respBody) as Map<String, dynamic>;
+    } catch (_) {
+      // Synology sometimes returns HTML on error
+      return <String, dynamic>{
+        'success': false,
+        'error': {'code': -1, 'detail': respBody},
+      };
     }
   }
 
@@ -1425,23 +1406,18 @@ class SynologyApi {
       queryParameters: params,
     );
 
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.getUrl(uri);
-      if (_synoToken != null) {
-        request.headers.set('X-SYNO-TOKEN', _synoToken!);
-      }
-      final response = await request.close();
-      final body = await response.transform(utf8.decoder).join();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-      if (json['success'] == true) {
-        final resultList = json['data']?['result'] as List? ?? [];
-        return resultList.cast<Map<String, dynamic>>();
-      }
-      return [];
-    } finally {
-      ioClient.close();
+    final request = await _getClient().getUrl(uri);
+    if (_synoToken != null) {
+      request.headers.set('X-SYNO-TOKEN', _synoToken!);
     }
+    final response = await request.close();
+    final body = await response.transform(utf8.decoder).join();
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    if (json['success'] == true) {
+      final resultList = json['data']?['result'] as List? ?? [];
+      return resultList.cast<Map<String, dynamic>>();
+    }
+    return [];
   }
 
   /// GET with DSM session + X-SYNO-TOKEN header.
@@ -1456,18 +1432,13 @@ class SynologyApi {
       queryParameters: params,
     );
 
-    final ioClient = _buildClient();
-    try {
-      final request = await ioClient.getUrl(uri);
-      if (_synoToken != null) {
-        request.headers.set('X-SYNO-TOKEN', _synoToken!);
-      }
-      final response = await request.close();
-      final body = await response.transform(utf8.decoder).join();
-      return jsonDecode(body) as Map<String, dynamic>;
-    } finally {
-      ioClient.close();
+    final request = await _getClient().getUrl(uri);
+    if (_synoToken != null) {
+      request.headers.set('X-SYNO-TOKEN', _synoToken!);
     }
+    final response = await request.close();
+    final body = await response.transform(utf8.decoder).join();
+    return jsonDecode(body) as Map<String, dynamic>;
   }
 
   // ── Shared Folder Permissions ───────────────────────────────────

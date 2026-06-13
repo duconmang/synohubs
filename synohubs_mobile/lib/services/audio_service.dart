@@ -465,8 +465,7 @@ class AudioService extends ChangeNotifier {
             folder: displayName,
           ));
 
-          // Update progress every 10 files
-          if (tracks.length % 10 == 0) {
+          if (tracks.length % 50 == 0) {
             onProgress?.call(displayName, tracks.length);
           }
         }
