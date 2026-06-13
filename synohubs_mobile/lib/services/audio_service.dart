@@ -417,14 +417,14 @@ class AudioService extends ChangeNotifier {
 
       final files = (resp['data']?['files'] as List? ?? []);
 
+      final subFolders = <MapEntry<String, String>>[];
       for (final f in files) {
         final m = f as Map<String, dynamic>;
         if (m['isdir'] == true) {
-          await scanRecursive(
+          subFolders.add(MapEntry(
             m['path'] as String? ?? '',
             m['name'] as String? ?? '',
-            depth + 1,
-          );
+          ));
         } else {
           final name = m['name'] as String? ?? '';
           if (name.isEmpty || !isAudioFile(name)) continue;
@@ -469,6 +469,14 @@ class AudioService extends ChangeNotifier {
             onProgress?.call(displayName, tracks.length);
           }
         }
+      }
+
+      // Recurse into subfolders in parallel (max 4 concurrent)
+      for (var i = 0; i < subFolders.length; i += 4) {
+        final batch = subFolders.skip(i).take(4);
+        await Future.wait(
+          batch.map((sub) => scanRecursive(sub.key, sub.value, depth + 1)),
+        );
       }
     }
 

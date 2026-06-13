@@ -132,14 +132,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {
-              _player.dispose();
-              _player = Player();
-              _controller = VideoController(_player);
+            onPressed: () async {
               setState(() {
                 _error = null;
                 _ready = false;
               });
+              await _player.dispose();
+              _player = Player();
+              _controller = VideoController(_player);
               _initPlayer();
             },
             icon: const Icon(Icons.refresh),

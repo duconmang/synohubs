@@ -212,6 +212,7 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
     if (!TmdbService.instance.isConfigured) return;
     final tmdb = TmdbService.instance;
     final seen = <String>{};
+    var pending = 0;
 
     for (final file in _allMedia.where((f) => f.isVideo)) {
       if (!mounted) return;
@@ -221,13 +222,21 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
 
       final poster = await tmdb.getPosterUrl(file.name);
       final backdrop = await tmdb.getBackdropUrl(file.name);
-      if (mounted) {
-        setState(() {
-          if (poster != null) _tmdbPosters[parsed] = poster;
-          if (backdrop != null) _tmdbBackdrops[parsed] = backdrop;
-        });
+      if (poster != null) _tmdbPosters[parsed] = poster;
+      if (backdrop != null) _tmdbBackdrops[parsed] = backdrop;
+      pending++;
+
+      // Batch UI updates every 5 fetches to reduce rebuilds
+      if (pending >= 5 && mounted) {
+        pending = 0;
+        setState(() {});
       }
+
+      // Rate limit: 40ms between requests to stay under TMDB's 50/sec limit
+      await Future.delayed(const Duration(milliseconds: 40));
     }
+    // Flush remaining
+    if (pending > 0 && mounted) setState(() {});
   }
 
   String? _getTmdbPoster(_MediaFile file) {
@@ -345,9 +354,12 @@ class _MediaHubScreenState extends State<MediaHubScreen> {
       }
     }
 
-    // Recurse into subfolders
-    for (final sub in subFolders) {
-      await _scanRecursive(sub.path, sub.name, depth + 1);
+    // Recurse into subfolders in parallel (max 4 concurrent)
+    for (var i = 0; i < subFolders.length; i += 4) {
+      final batch = subFolders.skip(i).take(4);
+      await Future.wait(
+        batch.map((sub) => _scanRecursive(sub.path, sub.name, depth + 1)),
+      );
     }
   }
 
