@@ -1,6 +1,6 @@
 [package]
 name = "synohubs"
-version = "0.1.0"
+version = "1.3.2"
 description = "SynoHubs - Multi-NAS Manager"
 authors = ["SynoHubs Team"]
 edition = "2021"
