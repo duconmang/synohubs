@@ -31,6 +31,14 @@ synohubs/src-tauri/gen/
 # ── Website (synohubs.com) — excluded from repo ──
 synohubs.com/
 
+# ── macOS / iOS build artifacts (not built on this machine) ──
+synohubs_mobile/macos/
+synohubs_mobile/ios/
+synohubs/src-tauri/gen/apple/
+MAC_SETUP.md
+SynoHubs_MacSetup.tar
+DS1825plus.png
+
 # ── General ──
 node_modules/
 *.log
